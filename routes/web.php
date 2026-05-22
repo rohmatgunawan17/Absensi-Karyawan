@@ -41,5 +41,6 @@ Route::middleware(['auth'])->group(function () {
 
 // Public scan endpoint (used by QR code scanners)
 Route::get('/attendance/scan/{token}', [QRCodeController::class, 'scan'])->name('attendance.scan');
+Route::get('/s/{token}', [QRCodeController::class, 'scan'])->name('attendance.scan.short');
 
 require __DIR__ . '/auth.php';

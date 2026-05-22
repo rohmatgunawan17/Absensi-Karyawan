@@ -15,7 +15,7 @@ class QRCodeController extends Controller
 
         // Generate encrypted token per employee
         $token = $employee ? encrypt($employee->id) : null;
-        $qrCodeValue = $token ? route('attendance.scan', ['token' => $token]) : route('dashboard');
+        $qrCodeValue = $token ? route('attendance.scan.short', ['token' => $token]) : route('dashboard');
         $qrCodeUrl = 'https://chart.googleapis.com/chart?cht=qr&chs=250x250&chl=' . urlencode($qrCodeValue);
         $todayAttendance = null;
 
