@@ -30,6 +30,12 @@
                         <a href="{{ route('shifts.index') }}" class="btn btn-primary w-100">Data Shift</a>
                     </div>
                     <div class="col-sm-6 col-md-4 col-lg-2">
+                        <a href="{{ route('attendances.index') }}" class="btn btn-outline-light w-100">Data Absensi</a>
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-lg-2">
+                        <a href="{{ route('admin.holidays.index') }}" class="btn btn-outline-light w-100">Hari Libur</a>
+                    </div>
+                    <div class="col-sm-6 col-md-4 col-lg-2">
                         <a href="{{ route('reports.attendance') }}" class="btn btn-outline-light w-100">Rekap Absensi</a>
                     </div>
                     <div class="col-sm-6 col-md-4 col-lg-2">
@@ -43,28 +49,34 @@
         </div>
     </div>
     <div class="row g-4">
-        <div class="col-md-6 col-xl-3">
+        <div class="col-md-6 col-xl">
             <div class="card p-4">
                 <h5>Total Karyawan</h5>
                 <p class="display-6 mb-0">{{ $totalEmployees }}</p>
             </div>
         </div>
-        <div class="col-md-6 col-xl-3">
+        <div class="col-md-6 col-xl">
             <div class="card p-4">
                 <h5>Hadir Hari Ini</h5>
                 <p class="display-6 mb-0">{{ $presentToday }}</p>
             </div>
         </div>
-        <div class="col-md-6 col-xl-3">
+        <div class="col-md-6 col-xl">
             <div class="card p-4">
                 <h5>Izin Hari Ini</h5>
                 <p class="display-6 mb-0">{{ $leaveToday }}</p>
             </div>
         </div>
-        <div class="col-md-6 col-xl-3">
+        <div class="col-md-6 col-xl">
             <div class="card p-4">
                 <h5>Sakit Hari Ini</h5>
                 <p class="display-6 mb-0">{{ $sickToday }}</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl">
+            <div class="card p-4">
+                <h5>Libur Hari Ini</h5>
+                <p class="display-6 mb-0">{{ $holidayToday }}</p>
             </div>
         </div>
     </div>

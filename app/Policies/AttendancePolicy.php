@@ -21,4 +21,9 @@ class AttendancePolicy
     {
         return $user->isAdmin();
     }
+
+    public function update(User $user, Attendance $attendance): bool
+    {
+        return $user->isAdmin();
+    }
 }

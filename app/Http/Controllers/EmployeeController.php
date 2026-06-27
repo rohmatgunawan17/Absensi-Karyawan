@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\Position;
 use App\Models\Shift;
 use App\Models\User;
+use App\Services\AttendanceHolidayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -16,9 +17,9 @@ class EmployeeController extends Controller
     {
         $search = $request->query('search');
         $employees = Employee::with(['user', 'position', 'shift'])
-            ->when($search, fn($query) => $query->where('name', 'like', "%{$search}%")
+            ->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%")
                 ->orWhere('nip', 'like', "%{$search}%")
-                ->orWhereHas('position', fn($q) => $q->where('name', 'like', "%{$search}%")))
+                ->orWhereHas('position', fn ($q) => $q->where('name', 'like', "%{$search}%")))
             ->latest()
             ->paginate(12)
             ->withQueryString();
@@ -34,7 +35,7 @@ class EmployeeController extends Controller
         return view('employees.create', compact('positions', 'shifts'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, AttendanceHolidayService $holidayService)
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
@@ -71,7 +72,8 @@ class EmployeeController extends Controller
             $employeeData['photo'] = $request->file('photo')->store('employees', 'public');
         }
 
-        Employee::create($employeeData);
+        $employee = Employee::create($employeeData);
+        $holidayService->syncEmployeeYear($employee, now()->year);
 
         return redirect()->route('employees.index')->with('success', 'Karyawan berhasil ditambahkan.');
     }
@@ -88,9 +90,9 @@ class EmployeeController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $employee->user_id,
+            'email' => 'required|email|unique:users,email,'.$employee->user_id,
             'password' => 'nullable|string|min:8|confirmed',
-            'nip' => 'required|string|unique:employees,nip,' . $employee->id,
+            'nip' => 'required|string|unique:employees,nip,'.$employee->id,
             'gender' => 'required|string|in:Laki-laki,Perempuan',
             'phone' => 'nullable|string|max:25',
             'address' => 'nullable|string',

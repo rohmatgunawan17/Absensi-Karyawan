@@ -13,6 +13,10 @@
                     class="list-group-item list-group-item-action bg-transparent text-white">Data Jabatan</a>
                 <a href="{{ route('shifts.index') }}"
                     class="list-group-item list-group-item-action bg-transparent text-white">Data Shift</a>
+                <a href="{{ route('attendances.index') }}"
+                    class="list-group-item list-group-item-action bg-transparent text-white">Data Absensi</a>
+                <a href="{{ route('admin.holidays.index') }}"
+                    class="list-group-item list-group-item-action bg-transparent text-white">Hari Libur</a>
                 <a href="{{ route('reports.attendance') }}"
                     class="list-group-item list-group-item-action bg-transparent text-white">Rekap Absensi</a>
                 <a href="{{ route('leave-requests.index') }}"

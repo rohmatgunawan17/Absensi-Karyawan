@@ -17,15 +17,22 @@
 
     <div class="card p-4 mb-4">
         <form class="row gy-3 gx-3" method="GET" action="{{ route('attendance.history') }}">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <input type="date" name="from" value="{{ request('from') }}" class="form-control"
                     placeholder="Dari tanggal">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <input type="date" name="to" value="{{ request('to') }}" class="form-control"
                     placeholder="Sampai tanggal">
             </div>
-            <div class="col-md-4 d-grid">
+            <div class="col-md-3">
+                <select name="type" class="form-select">
+                    <option value="attendance" @selected($type === 'attendance')>Hasil Absensi</option>
+                    <option value="holiday" @selected($type === 'holiday')>Hari Libur</option>
+                    <option value="all" @selected($type === 'all')>Semua Data</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-grid">
                 <button class="btn btn-primary">Filter</button>
             </div>
         </form>
@@ -47,14 +54,27 @@
                     @forelse($attendances as $attendance)
                         <tr>
                             <td>{{ $attendance->date->format('d M Y') }}</td>
-                            <td>{{ $attendance->status }}</td>
-                            <td>{{ optional($attendance->check_in)->format('H:i:s') }}</td>
-                            <td>{{ optional($attendance->check_out)->format('H:i:s') }}</td>
-                            <td>{{ $attendance->note }}</td>
+                            <td>
+                                @php
+                                    $badge = match ($attendance->status) {
+                                        'Hadir' => 'bg-success',
+                                        'Izin' => 'bg-info text-dark',
+                                        'Sakit' => 'bg-warning text-dark',
+                                        'Alpha', 'Libur' => 'bg-danger',
+                                        default => 'bg-secondary',
+                                    };
+                                @endphp
+                                <span class="badge {{ $badge }}">{{ $attendance->status }}</span>
+                            </td>
+                            <td>{{ optional($attendance->check_in)->format('H:i:s') ?? '-' }}</td>
+                            <td>{{ optional($attendance->check_out)->format('H:i:s') ?? '-' }}</td>
+                            <td>{{ $attendance->note ?: '-' }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">Belum ada riwayat absensi.</td>
+                            <td colspan="5" class="text-center py-4">
+                                {{ $type === 'holiday' ? 'Belum ada data hari libur.' : 'Belum ada hasil absensi pada filter ini.' }}
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>

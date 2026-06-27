@@ -5,19 +5,27 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Services\AttendanceHolidayService;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, AttendanceHolidayService $holidayService)
     {
+        $holidayService->syncDate(now());
+
         if ($request->user()->isAdmin()) {
             $totalEmployees = Employee::count();
             $presentToday = Attendance::whereDate('date', now())->where('status', 'Hadir')->count();
             $leaveToday = Attendance::whereDate('date', now())->where('status', 'Izin')->count();
             $sickToday = Attendance::whereDate('date', now())->where('status', 'Sakit')->count();
             $absentToday = Attendance::whereDate('date', now())->where('status', 'Alpha')->count();
-            $recentActivities = Attendance::with('employee')->latest()->take(5)->get();
+            $holidayToday = Attendance::whereDate('date', now())->where('status', 'Libur')->count();
+            $recentActivities = Attendance::with('employee')
+                ->where('status', '!=', 'Libur')
+                ->latest('date')
+                ->take(5)
+                ->get();
             $monthlyData = collect();
 
             for ($i = 5; $i >= 0; $i--) {
@@ -26,6 +34,7 @@ class DashboardController extends Controller
                     'label' => now()->subMonths($i)->format('M Y'),
                     'count' => Attendance::whereYear('date', now()->subMonths($i)->year)
                         ->whereMonth('date', now()->subMonths($i)->month)
+                        ->where('status', '!=', 'Libur')
                         ->count(),
                 ]);
             }
@@ -36,6 +45,7 @@ class DashboardController extends Controller
                 'leaveToday',
                 'sickToday',
                 'absentToday',
+                'holidayToday',
                 'recentActivities',
                 'monthlyData'
             ));

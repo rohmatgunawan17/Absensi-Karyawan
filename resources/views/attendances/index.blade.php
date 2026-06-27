@@ -29,7 +29,7 @@
             <div class="col-md-2">
                 <select name="status" class="form-select">
                     <option value="">Semua Status</option>
-                    @foreach (['Hadir', 'Izin', 'Sakit', 'Alpha'] as $item)
+                    @foreach (\App\Models\Attendance::STATUSES as $item)
                         <option value="{{ $item }}" {{ $status === $item ? 'selected' : '' }}>{{ $item }}
                         </option>
                     @endforeach
@@ -66,11 +66,13 @@
                         <tr>
                             <td>{{ $attendance->date->format('d M Y') }}</td>
                             <td>{{ $attendance->employee->name }}</td>
-                            <td>{{ $attendance->status }}</td>
+                            <td><span class="badge {{ $attendance->status === 'Libur' ? 'bg-danger' : 'bg-secondary' }}">{{ $attendance->status }}</span></td>
                             <td>{{ optional($attendance->check_in)->format('H:i:s') }}</td>
                             <td>{{ optional($attendance->check_out)->format('H:i:s') }}</td>
                             <td>{{ $attendance->latitude }}, {{ $attendance->longitude }}</td>
                             <td>
+                                <a href="{{ route('attendances.edit', $attendance) }}"
+                                    class="btn btn-sm btn-outline-light mb-1">Edit</a>
                                 <form action="{{ route('attendances.destroy', $attendance) }}" method="POST"
                                     onsubmit="return confirm('Hapus data absensi?')">
                                     @csrf

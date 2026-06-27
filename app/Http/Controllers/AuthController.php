@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\Position;
 use App\Models\Shift;
 use App\Models\User;
+use App\Services\AttendanceHolidayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -38,7 +39,7 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request)
+    public function register(Request $request, AttendanceHolidayService $holidayService)
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -56,9 +57,9 @@ class AuthController extends Controller
         $defaultPosition = Position::first();
         $defaultShift = Shift::first();
 
-        Employee::create([
+        $employee = Employee::create([
             'user_id' => $user->id,
-            'nip' => 'NIP' . str_pad($user->id, 4, '0', STR_PAD_LEFT),
+            'nip' => 'NIP'.str_pad($user->id, 4, '0', STR_PAD_LEFT),
             'name' => $user->name,
             'gender' => 'Laki-laki',
             'phone' => '',
@@ -67,6 +68,7 @@ class AuthController extends Controller
             'position_id' => optional($defaultPosition)->id,
             'shift_id' => optional($defaultShift)->id,
         ]);
+        $holidayService->syncEmployeeYear($employee, now()->year);
 
         Auth::login($user);
 

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Employee;
 use App\Models\Attendance;
+use App\Models\Employee;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class QRCodeController extends Controller
@@ -16,7 +16,7 @@ class QRCodeController extends Controller
         // Generate encrypted token per employee
         $token = $employee ? encrypt($employee->id) : null;
         $qrCodeValue = $token ? route('attendance.scan.short', ['token' => $token]) : route('dashboard');
-        $qrCodeUrl = 'https://chart.googleapis.com/chart?cht=qr&chs=250x250&chl=' . urlencode($qrCodeValue);
+        $qrCodeUrl = 'https://chart.googleapis.com/chart?cht=qr&chs=250x250&chl='.urlencode($qrCodeValue);
         $todayAttendance = null;
 
         if ($employee) {
@@ -31,7 +31,8 @@ class QRCodeController extends Controller
         try {
             $employeeId = decrypt($token);
         } catch (\Throwable $e) {
-            Log::warning('Invalid QR token scan: ' . $e->getMessage());
+            Log::warning('Invalid QR token scan: '.$e->getMessage());
+
             return view('attendances.scan-result', ['status' => 'error', 'message' => 'Token QR tidak valid.']);
         }
 
@@ -42,21 +43,21 @@ class QRCodeController extends Controller
 
         $attendance = $employee->attendances()->whereDate('date', now())->first();
 
-        if (! $attendance) {
-            // create check-in
-            $attendance = Attendance::create([
+        if (! $attendance || ! $attendance->check_in) {
+            $attendance ??= new Attendance([
                 'employee_id' => $employee->id,
                 'date' => now()->toDateString(),
-                'status' => 'Hadir',
-                'check_in' => now(),
             ]);
 
-            return view('attendances.scan-result', ['status' => 'success', 'message' => 'Absensi masuk berhasil untuk ' . $employee->name, 'attendance' => $attendance]);
+            $attendance->fill(['status' => 'Hadir', 'check_in' => now()])->save();
+
+            return view('attendances.scan-result', ['status' => 'success', 'message' => 'Absensi masuk berhasil untuk '.$employee->name, 'attendance' => $attendance]);
         }
 
         if (! $attendance->check_out) {
             $attendance->update(['check_out' => now()]);
-            return view('attendances.scan-result', ['status' => 'success', 'message' => 'Absensi pulang berhasil untuk ' . $employee->name, 'attendance' => $attendance]);
+
+            return view('attendances.scan-result', ['status' => 'success', 'message' => 'Absensi pulang berhasil untuk '.$employee->name, 'attendance' => $attendance]);
         }
 
         return view('attendances.scan-result', ['status' => 'info', 'message' => 'Absensi sudah lengkap untuk hari ini.']);

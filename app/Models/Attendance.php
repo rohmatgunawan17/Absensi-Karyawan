@@ -9,6 +9,8 @@ class Attendance extends Model
 {
     use HasFactory;
 
+    public const STATUSES = ['Hadir', 'Izin', 'Sakit', 'Alpha', 'Libur'];
+
     protected $fillable = [
         'employee_id',
         'date',

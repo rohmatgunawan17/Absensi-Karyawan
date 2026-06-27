@@ -34,7 +34,7 @@
                     <div class="col-12">
                         <a href="{{ route('attendance.qr') }}" class="btn btn-primary w-100">Lihat QR Code Absensi</a>
                     </div>
-                    @if ($todayAttendance && !$todayAttendance->check_out)
+                    @if ($todayAttendance?->check_in && !$todayAttendance->check_out)
                         <div class="col-12">
                             <form method="POST" action="{{ route('attendance.checkout') }}" class="mb-0">
                                 @csrf

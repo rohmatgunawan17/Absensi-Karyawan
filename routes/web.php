@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AdminHolidayController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\HolidayController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProfileController;
@@ -27,11 +29,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/leave-requests', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
     Route::get('/leave-requests', [LeaveRequestController::class, 'index'])->name('leave-requests.index');
 
-    Route::middleware([RoleMiddleware::class . ':admin'])->group(function () {
+    Route::middleware([RoleMiddleware::class.':admin'])->group(function () {
         Route::resource('employees', EmployeeController::class)->except(['show']);
         Route::resource('positions', PositionController::class)->except(['show']);
         Route::resource('shifts', ShiftController::class)->except(['show']);
-        Route::resource('attendances', AttendanceController::class)->only(['index', 'destroy']);
+        Route::resource('attendances', AttendanceController::class)->only(['index', 'edit', 'update', 'destroy']);
+        Route::get('/admin/holidays', [AdminHolidayController::class, 'index'])->name('admin.holidays.index');
+        Route::post('/admin/holidays', [AdminHolidayController::class, 'store'])->name('admin.holidays.store');
+        Route::post('/admin/holidays/import', [AdminHolidayController::class, 'import'])->name('admin.holidays.import');
+        Route::delete('/admin/holidays/{holiday}', [AdminHolidayController::class, 'destroy'])->name('admin.holidays.destroy');
         Route::resource('leave-requests', LeaveRequestController::class)->only(['edit', 'update', 'destroy']);
         Route::get('/reports/attendance/pdf', [AttendanceController::class, 'exportPdf'])->name('reports.attendance.pdf');
         Route::get('/reports/attendance/excel', [AttendanceController::class, 'exportExcel'])->name('reports.attendance.excel');
@@ -43,4 +49,6 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/attendance/scan/{token}', [QRCodeController::class, 'scan'])->name('attendance.scan');
 Route::get('/s/{token}', [QRCodeController::class, 'scan'])->name('attendance.scan.short');
 
-require __DIR__ . '/auth.php';
+Route::get('/holidays', [HolidayController::class, 'index'])->name('holidays.index');
+
+require __DIR__.'/auth.php';

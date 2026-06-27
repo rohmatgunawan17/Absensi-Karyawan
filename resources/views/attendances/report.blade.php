@@ -31,7 +31,7 @@
             <div class="col-md-3">
                 <select name="status" class="form-select">
                     <option value="">Semua Status</option>
-                    @foreach (['Hadir', 'Izin', 'Sakit', 'Alpha'] as $item)
+                    @foreach (\App\Models\Attendance::STATUSES as $item)
                         <option value="{{ $item }}" {{ $status === $item ? 'selected' : '' }}>{{ $item }}
                         </option>
                     @endforeach
