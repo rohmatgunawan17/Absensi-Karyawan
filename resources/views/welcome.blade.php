@@ -4,8 +4,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Kalender resmi hari libur nasional dan cuti bersama Indonesia tahun 2026.">
+    <meta name="description" content="Sistem Absensi Karyawan Elang Omega dan kalender hari libur Indonesia.">
+    <meta name="theme-color" content="#b91c1c">
     <title>{{ config('app.name', 'Absensi Karyawan') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('logo-elangomega.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('logo-elangomega.png') }}">
     <script>
         (function() {
             try {
@@ -97,10 +100,12 @@
             width: 36px;
             height: 36px;
             border-radius: 11px;
-            background: linear-gradient(145deg, #ef4444, #991b1b);
+            background: #fff;
             box-shadow: 0 8px 24px rgba(220, 38, 38, .3);
             place-items: center;
         }
+
+        .brand-mark img { width: 100%; height: 100%; padding: 4px; object-fit: contain; }
 
         .nav-actions { display: flex; gap: 10px; }
 
@@ -268,8 +273,8 @@
     <header class="site-header">
         <nav class="nav" aria-label="Navigasi utama">
             <a class="brand" href="{{ route('home') }}">
-                <span class="brand-mark" aria-hidden="true">A</span>
-                <span>Absensi Karyawan</span>
+                <span class="brand-mark" aria-hidden="true"><img src="{{ asset('logo-elangomega.png') }}" alt=""></span>
+                <span>Absensi Karyawan Elang Omega</span>
             </a>
             <div class="nav-actions">
                 <button id="themeToggle" class="theme-toggle" type="button" aria-label="Aktifkan mode siang"
@@ -297,7 +302,7 @@
     <main class="page">
         <section class="hero">
             <p class="eyebrow">Kalender resmi Indonesia</p>
-            <h1>Rencanakan hari kerja dengan lebih pasti.</h1>
+            <h1>Absensi Karyawan Elang Omega.</h1>
             <p class="hero-copy">Pantau hari libur nasional dan cuti bersama Indonesia untuk tahun berjalan maupun tahun berikutnya.</p>
         </section>
 

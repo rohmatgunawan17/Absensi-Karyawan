@@ -9,7 +9,7 @@
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <div>
                         <h2 class="page-title mb-1">Edit Absensi</h2>
-                        <p class="text-muted mb-0">{{ $attendance->employee->name }} · {{ $attendance->date->format('d M Y') }}</p>
+                        <p class="text-muted mb-0">{{ $attendance->employee->name }} · {{ $attendance->date->translatedFormat('l, j F Y') }}</p>
                     </div>
                     <a href="{{ route('attendances.index') }}" class="btn btn-outline-light">Kembali</a>
                 </div>
@@ -27,7 +27,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Tanggal</label>
-                            <input class="form-control" value="{{ $attendance->date->format('d-m-Y') }}" disabled>
+                            <input class="form-control" value="{{ $attendance->date->translatedFormat('l, j F Y') }}" disabled>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Status</label>

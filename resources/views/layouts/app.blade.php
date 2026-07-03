@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#b91c1c">
     <title>{{ config('app.name', 'Absensi Karyawan') }} - @yield('title')</title>
+    <link rel="icon" type="image/png" href="{{ asset('logo-elangomega.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('logo-elangomega.png') }}">
     <script>
         (function() {
             try {
@@ -33,6 +36,7 @@
             min-height: 100vh;
             background: radial-gradient(circle at top left, #ff3d3d, #000000 40%);
             color: #f8f9fa;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
         body,
@@ -52,6 +56,9 @@
         .card {
             background: rgba(10, 10, 10, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+            box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, .16);
+            backdrop-filter: blur(14px);
         }
 
         .navbar,
@@ -78,6 +85,16 @@
             border-color: #bf1111;
         }
 
+        .btn {
+            border-radius: .7rem;
+            font-weight: 650;
+            transition: color .25s ease, background-color .25s ease, border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
         .btn-primary:hover {
             background: #c11b1b;
         }
@@ -94,6 +111,16 @@
             background: rgba(255, 255, 255, 0.08);
             color: #f8f9fa;
             border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .form-control,
+        .form-select {
+            min-height: 44px;
+            border-radius: .7rem;
+        }
+
+        textarea.form-control {
+            min-height: auto;
         }
 
         .form-control:focus {
@@ -178,6 +205,21 @@
             background: rgba(18, 18, 18, 0.92);
         }
 
+        .table > :not(caption) > * > * {
+            padding: .85rem .75rem;
+        }
+
+        .table thead th {
+            color: #cbd5e1;
+            font-size: .72rem;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        html[data-theme="light"] .table thead th {
+            color: #64748b;
+        }
+
         .text-muted {
             color: #d1d1d1 !important;
         }
@@ -194,6 +236,32 @@
             border-radius: 50%;
             place-items: center;
             overflow: hidden;
+        }
+
+        .brand-logo-shell {
+            display: inline-flex;
+            width: 58px;
+            height: 34px;
+            padding: 4px 6px;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border: 1px solid rgba(255, 255, 255, .18);
+            border-radius: 10px;
+            box-shadow: 0 6px 18px rgba(220, 38, 38, .2);
+        }
+
+        .brand-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .navbar-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: .65rem;
+            letter-spacing: -.02em;
         }
 
         .theme-toggle:hover {
@@ -372,7 +440,12 @@
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top px-3">
-        <a class="navbar-brand fw-bold" href="{{ route('home') }}">Absensi Karyawan</a>
+        <a class="navbar-brand fw-bold" href="{{ route('home') }}">
+            <span class="brand-logo-shell">
+                <img class="brand-logo" src="{{ asset('logo-elangomega.png') }}" alt="Logo Elang Omega">
+            </span>
+            <span>Elang Omega</span>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -433,6 +506,19 @@
             });
 
             updateThemeLabel();
+
+            document.querySelectorAll('.date-filter').forEach(function(input) {
+                input.addEventListener('input', function() {
+                    const digits = input.value.replace(/\D/g, '').slice(0, 8);
+                    const parts = [];
+
+                    if (digits.length) parts.push(digits.slice(0, 2));
+                    if (digits.length > 2) parts.push(digits.slice(2, 4));
+                    if (digits.length > 4) parts.push(digits.slice(4, 8));
+
+                    input.value = parts.join('/');
+                });
+            });
 
             const eyeOpen = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
             const eyeClosed = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m3 3 18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 4.2A10.8 10.8 0 0 1 12 4c6.5 0 10 8 10 8a18.5 18.5 0 0 1-2 3.2M6.6 6.6C3.5 8.5 2 12 2 12s3.5 8 10 8a9.8 9.8 0 0 0 5.4-1.6"/></svg>';

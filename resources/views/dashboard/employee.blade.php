@@ -78,8 +78,8 @@
                 @forelse($pendingLeave as $leave)
                     <div class="mb-3 border-bottom border-white border-opacity-10 pb-3">
                         <strong>{{ $leave->type }}</strong>
-                        <div class="text-muted">{{ $leave->start_date->format('d M Y') }} -
-                            {{ $leave->end_date->format('d M Y') }}</div>
+                        <div class="text-muted">{{ $leave->start_date->translatedFormat('l, j F Y') }} -
+                            {{ $leave->end_date->translatedFormat('l, j F Y') }}</div>
                         <div class="text-white small">Status: {{ $leave->status }}</div>
                     </div>
                 @empty

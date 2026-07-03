@@ -95,7 +95,7 @@
                         <li class="list-group-item bg-transparent text-white border-light border-opacity-10">
                             <strong>{{ $activity->employee->name }}</strong> melakukan absensi <span
                                 class="badge bg-danger">{{ $activity->status }}</span>
-                            <div class="text-muted small">{{ $activity->date->format('d M Y') }}
+                            <div class="text-muted small">{{ $activity->date->translatedFormat('l, j F Y') }}
                                 {{ optional($activity->check_in)->format('H:i:s') }}</div>
                         </li>
                     @empty

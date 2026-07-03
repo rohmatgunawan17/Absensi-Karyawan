@@ -49,8 +49,8 @@
 
         <div class="col-lg-6">
             <div class="card p-4 h-100">
-                <h5 class="mb-3">Impor CSV</h5>
-                <p class="text-muted small">Gunakan CSV UTF-8 dengan pemisah koma atau titik koma. Kolom wajib:
+                <h5 class="mb-3">Impor CSV / Excel</h5>
+                <p class="text-muted small">Gunakan CSV UTF-8, XLSX, atau XLS. Kolom wajib:
                     <code>tanggal,nama</code>. Kolom opsional: <code>jenis,sumber</code>.</p>
                 <div class="rounded border border-secondary border-opacity-25 p-3 mb-3 small">
                     <code>tanggal,nama,jenis,sumber</code><br>
@@ -60,9 +60,9 @@
                 <form id="holidayImportForm" method="POST" action="{{ route('admin.holidays.import') }}"
                     enctype="multipart/form-data">
                     @csrf
-                    <label class="form-label" for="holidayFile">Pilih File CSV</label>
-                    <input id="holidayFile" type="file" name="holiday_file" class="form-control" accept=".csv,text/csv"
-                        required>
+                    <label class="form-label" for="holidayFile">Pilih File CSV / Excel</label>
+                    <input id="holidayFile" type="file" name="holiday_file" class="form-control"
+                        accept=".csv,.xlsx,.xls,text/csv" required>
                     <input id="holidayData" type="hidden" name="holiday_data">
                     <div id="holidayFileStatus" class="form-text text-muted mb-3">Maksimal 2 MB.</div>
                     <button id="holidayImportButton" class="btn btn-primary w-100">Impor dan Generate Absensi</button>
@@ -100,7 +100,7 @@
                 <tbody>
                     @forelse ($holidays as $holiday)
                         <tr>
-                            <td>{{ $holiday->date->translatedFormat('d M Y') }}</td>
+                            <td>{{ $holiday->date->translatedFormat('l, j F Y') }}</td>
                             <td>{{ $holiday->name }}</td>
                             <td>
                                 <span class="badge {{ $holiday->type === 'national' ? 'bg-danger' : 'bg-warning text-dark' }}">
@@ -156,6 +156,12 @@
 
                 status.classList.remove('text-danger');
                 status.textContent = 'Membaca file...';
+                if (!file.name.toLowerCase().endsWith('.csv')) {
+                    fileReady = true;
+                    status.textContent = 'File Excel siap diimpor.';
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.addEventListener('load', function() {
                     dataInput.value = reader.result;

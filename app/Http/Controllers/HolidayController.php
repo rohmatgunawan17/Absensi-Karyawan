@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Holiday;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class HolidayController extends Controller
 {
@@ -11,11 +13,7 @@ class HolidayController extends Controller
     {
         $year = (int) $request->integer('year', now()->year);
         $calendars = config('indonesian_holidays', []);
-        $calendar = $calendars[$year] ?? null;
-
-        if (! $calendar) {
-            return response()->json([]);
-        }
+        $calendar = $calendars[$year] ?? ['national' => [], 'collective_leave' => []];
 
         $national = collect($calendar['national'])->map(fn (array $holiday): array => [
             'title' => $holiday['name'],
@@ -35,6 +33,25 @@ class HolidayController extends Controller
             'extendedProps' => ['type' => 'Cuti Bersama'],
         ]);
 
-        return response()->json($national->concat($collectiveLeave)->values());
+        $databaseHolidays = Schema::hasTable('holidays')
+            ? Holiday::whereYear('date', $year)->get()->map(fn (Holiday $holiday): array => [
+                'title' => $holiday->name,
+                'start' => $holiday->date->toDateString(),
+                'allDay' => true,
+                'backgroundColor' => $holiday->type === 'national' ? '#dc2626' : '#d97706',
+                'borderColor' => $holiday->type === 'national' ? '#dc2626' : '#d97706',
+                'extendedProps' => [
+                    'type' => $holiday->type === 'national' ? 'Libur Nasional' : 'Cuti Bersama',
+                    'source' => $holiday->source,
+                ],
+            ])
+            : collect();
+
+        return response()->json(
+            $national->concat($collectiveLeave)
+                ->concat($databaseHolidays)
+                ->unique(fn (array $holiday) => $holiday['start'].'|'.$holiday['title'].'|'.$holiday['extendedProps']['type'])
+                ->values()
+        );
     }
 }

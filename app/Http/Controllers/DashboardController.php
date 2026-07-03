@@ -29,9 +29,8 @@ class DashboardController extends Controller
             $monthlyData = collect();
 
             for ($i = 5; $i >= 0; $i--) {
-                $month = now()->subMonths($i)->format('Y-m');
                 $monthlyData->push([
-                    'label' => now()->subMonths($i)->format('M Y'),
+                    'label' => now()->subMonths($i)->translatedFormat('F Y'),
                     'count' => Attendance::whereYear('date', now()->subMonths($i)->year)
                         ->whereMonth('date', now()->subMonths($i)->month)
                         ->where('status', '!=', 'Libur')
@@ -55,7 +54,7 @@ class DashboardController extends Controller
         $todayAttendance = $employee?->attendances()->whereDate('date', now())->first();
         $pendingLeave = LeaveRequest::where('employee_id', $employee->id ?? 0)
             ->where('status', 'Pending')
-            ->latest()
+            ->orderByDesc('start_date')
             ->take(3)
             ->get();
 

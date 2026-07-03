@@ -36,10 +36,12 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <input type="date" name="from" value="{{ $from }}" class="form-control">
+                <input type="text" name="from" value="{{ $from }}" class="form-control date-filter"
+                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}">
             </div>
             <div class="col-md-2">
-                <input type="date" name="to" value="{{ $to }}" class="form-control">
+                <input type="text" name="to" value="{{ $to }}" class="form-control date-filter"
+                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}">
             </div>
             <div class="col-md-3 d-grid">
                 <button class="btn btn-primary">Terapkan Filter</button>
@@ -64,7 +66,7 @@
                 <tbody>
                     @forelse($attendances as $attendance)
                         <tr>
-                            <td>{{ $attendance->date->format('d M Y') }}</td>
+                            <td>{{ $attendance->date->translatedFormat('l, j F Y') }}</td>
                             <td>{{ $attendance->employee->name }}</td>
                             <td><span class="badge {{ $attendance->status === 'Libur' ? 'bg-danger' : 'bg-secondary' }}">{{ $attendance->status }}</span></td>
                             <td>{{ optional($attendance->check_in)->format('H:i:s') }}</td>

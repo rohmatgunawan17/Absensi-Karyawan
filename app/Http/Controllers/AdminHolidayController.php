@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class AdminHolidayController extends Controller
 {
@@ -27,10 +28,8 @@ class AdminHolidayController extends Controller
             ->withQueryString();
 
         $years = Holiday::query()
-            ->selectRaw('YEAR(date) as year')
-            ->distinct()
-            ->orderByDesc('year')
-            ->pluck('year')
+            ->pluck('date')
+            ->map(fn ($date) => Carbon::parse($date)->year)
             ->push(now()->year, now()->addYear()->year)
             ->unique()
             ->sortDesc()
@@ -63,13 +62,18 @@ class AdminHolidayController extends Controller
     public function import(Request $request, AttendanceHolidayService $holidayService)
     {
         $data = $request->validate([
-            'holiday_file' => ['nullable', 'required_without:holiday_data', 'file', 'mimes:csv,txt', 'max:2048'],
+            'holiday_file' => ['nullable', 'required_without:holiday_data', 'file', 'mimes:csv,txt,xlsx,xls', 'max:2048'],
             'holiday_data' => ['nullable', 'required_without:holiday_file', 'string', 'max:2000000'],
         ]);
 
         $contents = $data['holiday_data'] ?? null;
+        $rows = null;
 
-        if (! $contents && $request->hasFile('holiday_file')) {
+        if ($contents) {
+            $rows = $this->parseCsv($contents);
+        }
+
+        if (! $rows && $request->hasFile('holiday_file')) {
             $file = $request->file('holiday_file');
             $path = $file?->getRealPath();
 
@@ -79,10 +83,17 @@ class AdminHolidayController extends Controller
                 ]);
             }
 
-            $contents = file_get_contents($path);
+            $rows = in_array(strtolower($file->getClientOriginalExtension()), ['xlsx', 'xls'], true)
+                ? $this->parseSpreadsheet($path)
+                : $this->parseCsv((string) file_get_contents($path));
         }
 
-        $rows = $this->parseCsv((string) $contents);
+        if (! $rows) {
+            throw ValidationException::withMessages([
+                'holiday_file' => 'File tidak memiliki data hari libur yang dapat diproses.',
+            ]);
+        }
+
         $years = collect();
         $imported = 0;
 
@@ -146,13 +157,17 @@ class AdminHolidayController extends Controller
             }
 
             $values = str_getcsv($line, $delimiter);
-            $row = array_combine($headers, array_pad($values, count($headers), null));
+            $row = array_combine(
+                $headers,
+                array_slice(array_pad($values, count($headers), null), 0, count($headers))
+            );
             $date = $this->parseDate((string) ($row['tanggal'] ?? ''));
             $name = trim((string) ($row['nama'] ?? ''));
             $type = $this->normalizeType((string) ($row['jenis'] ?? 'national'));
 
             if (! $date || $name === '' || ! $type) {
                 $errors[] = $index + 2;
+
                 continue;
             }
 
@@ -177,6 +192,31 @@ class AdminHolidayController extends Controller
         }
 
         return $rows;
+    }
+
+    private function parseSpreadsheet(string $path): array
+    {
+        try {
+            $sheetRows = IOFactory::load($path)->getActiveSheet()->toArray(null, true, true, false);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            throw ValidationException::withMessages([
+                'holiday_file' => 'File Excel tidak dapat dibaca. Gunakan XLSX/XLS yang valid.',
+            ]);
+        }
+
+        $stream = fopen('php://temp', 'w+');
+
+        foreach ($sheetRows as $row) {
+            fputcsv($stream, $row);
+        }
+
+        rewind($stream);
+        $contents = stream_get_contents($stream);
+        fclose($stream);
+
+        return $this->parseCsv((string) $contents);
     }
 
     private function parseDate(string $value): ?string

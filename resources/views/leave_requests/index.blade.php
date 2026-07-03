@@ -30,7 +30,7 @@
                     @forelse($leaveRequests as $request)
                         <tr>
                             <td>{{ $request->employee->name }}</td>
-                            <td>{{ $request->start_date->format('d M Y') }} - {{ $request->end_date->format('d M Y') }}</td>
+                            <td>{{ $request->start_date->translatedFormat('l, j F Y') }} - {{ $request->end_date->translatedFormat('l, j F Y') }}</td>
                             <td>{{ $request->type }}</td>
                             <td>{{ $request->status }}</td>
                             <td>{{ $request->reason }}</td>

@@ -23,10 +23,12 @@
     <div class="card p-4 mb-4">
         <form class="row gy-3 gx-3" method="GET" action="{{ route('reports.attendance') }}">
             <div class="col-md-3">
-                <input type="date" name="from" value="{{ $from }}" class="form-control">
+                <input type="text" name="from" value="{{ $from }}" class="form-control date-filter"
+                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}">
             </div>
             <div class="col-md-3">
-                <input type="date" name="to" value="{{ $to }}" class="form-control">
+                <input type="text" name="to" value="{{ $to }}" class="form-control date-filter"
+                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}">
             </div>
             <div class="col-md-3">
                 <select name="status" class="form-select">
@@ -58,7 +60,7 @@
                 <tbody>
                     @forelse($attendances as $attendance)
                         <tr>
-                            <td>{{ $attendance->date->format('d M Y') }}</td>
+                            <td>{{ $attendance->date->translatedFormat('l, j F Y') }}</td>
                             <td>{{ $attendance->employee->name }}</td>
                             <td>{{ $attendance->status }}</td>
                             <td>{{ optional($attendance->check_in)->format('H:i:s') }}</td>

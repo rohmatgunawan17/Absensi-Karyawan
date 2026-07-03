@@ -18,12 +18,12 @@
     <div class="card p-4 mb-4">
         <form class="row gy-3 gx-3" method="GET" action="{{ route('attendance.history') }}">
             <div class="col-md-3">
-                <input type="date" name="from" value="{{ request('from') }}" class="form-control"
-                    placeholder="Dari tanggal">
+                <input type="text" name="from" value="{{ request('from') }}" class="form-control date-filter"
+                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}">
             </div>
             <div class="col-md-3">
-                <input type="date" name="to" value="{{ request('to') }}" class="form-control"
-                    placeholder="Sampai tanggal">
+                <input type="text" name="to" value="{{ request('to') }}" class="form-control date-filter"
+                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}">
             </div>
             <div class="col-md-3">
                 <select name="type" class="form-select">
@@ -53,7 +53,7 @@
                 <tbody>
                     @forelse($attendances as $attendance)
                         <tr>
-                            <td>{{ $attendance->date->format('d M Y') }}</td>
+                            <td>{{ $attendance->date->translatedFormat('l, j F Y') }}</td>
                             <td>
                                 @php
                                     $badge = match ($attendance->status) {

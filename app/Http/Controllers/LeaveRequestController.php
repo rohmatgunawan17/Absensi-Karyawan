@@ -12,10 +12,10 @@ class LeaveRequestController extends Controller
         $query = LeaveRequest::with('employee.position');
 
         if ($request->user()->isAdmin()) {
-            $leaveRequests = $query->latest()->paginate(12)->withQueryString();
+            $leaveRequests = $query->orderByDesc('start_date')->paginate(12)->withQueryString();
         } else {
             $leaveRequests = $query->where('employee_id', $request->user()->employee?->id)
-                ->latest()
+                ->orderByDesc('start_date')
                 ->paginate(12)
                 ->withQueryString();
         }

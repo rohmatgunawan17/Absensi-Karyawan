@@ -11,7 +11,8 @@ class LeaveRequestApiController extends Controller
     public function index(Request $request)
     {
         return LeaveRequest::with('employee.position')
-            ->when($request->query('status'), fn($query, $status) => $query->where('status', $status))
+            ->when($request->query('status'), fn ($query, $status) => $query->where('status', $status))
+            ->orderByDesc('start_date')
             ->paginate(20);
     }
 }

@@ -11,6 +11,7 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 class AttendancesExport implements FromCollection, WithHeadings, WithMapping
 {
     protected $from;
+
     protected $to;
 
     public function __construct(?string $from = null, ?string $to = null)
@@ -22,8 +23,9 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping
     public function collection(): Collection
     {
         return Attendance::with(['employee.position', 'employee.shift'])
-            ->when($this->from, fn($query) => $query->whereDate('date', '>=', $this->from))
-            ->when($this->to, fn($query) => $query->whereDate('date', '<=', $this->to))
+            ->when($this->from, fn ($query) => $query->whereDate('date', '>=', $this->from))
+            ->when($this->to, fn ($query) => $query->whereDate('date', '<=', $this->to))
+            ->orderByDesc('date')
             ->get();
     }
 
@@ -47,7 +49,7 @@ class AttendancesExport implements FromCollection, WithHeadings, WithMapping
     public function map($attendance): array
     {
         return [
-            $attendance->date->format('Y-m-d'),
+            $attendance->date->translatedFormat('l, j F Y'),
             $attendance->employee->nip,
             $attendance->employee->name,
             $attendance->employee->position?->name,

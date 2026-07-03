@@ -21,12 +21,18 @@ class AttendanceController extends Controller
         $status = $request->query('status');
         $from = $request->query('from');
         $to = $request->query('to');
+        $request->validate([
+            'from' => ['nullable', 'date_format:d/m/Y'],
+            'to' => ['nullable', 'date_format:d/m/Y'],
+        ]);
+        $fromDate = $this->parseFilterDate($from);
+        $toDate = $this->parseFilterDate($to);
 
         $attendances = Attendance::with(['employee.position', 'employee.shift'])
             ->when($search, fn ($query) => $query->whereHas('employee', fn ($q) => $q->where('name', 'like', "%{$search}%")))
             ->when($status, fn ($query) => $query->where('status', $status))
-            ->when($from, fn ($query) => $query->whereDate('date', '>=', $from))
-            ->when($to, fn ($query) => $query->whereDate('date', '<=', $to))
+            ->when($fromDate, fn ($query) => $query->whereDate('date', '>=', $fromDate))
+            ->when($toDate, fn ($query) => $query->whereDate('date', '<=', $toDate))
             ->latest('date')
             ->paginate(15)
             ->withQueryString();
@@ -43,13 +49,22 @@ class AttendanceController extends Controller
             $type = 'attendance';
         }
 
+        $request->validate([
+            'from' => ['nullable', 'date_format:d/m/Y'],
+            'to' => ['nullable', 'date_format:d/m/Y'],
+        ]);
+        $from = $request->query('from');
+        $to = $request->query('to');
+        $fromDate = $this->parseFilterDate($from);
+        $toDate = $this->parseFilterDate($to);
+
         $attendances = Attendance::with(['employee.position', 'employee.shift'])
             ->where('employee_id', $employee->id)
             ->whereDate('date', '<=', now())
             ->when($type === 'attendance', fn ($query) => $query->where('status', '!=', 'Libur'))
             ->when($type === 'holiday', fn ($query) => $query->where('status', 'Libur'))
-            ->when($request->query('from'), fn ($query, $from) => $query->whereDate('date', '>=', $from))
-            ->when($request->query('to'), fn ($query, $to) => $query->whereDate('date', '<=', $to))
+            ->when($fromDate, fn ($query) => $query->whereDate('date', '>=', $fromDate))
+            ->when($toDate, fn ($query) => $query->whereDate('date', '<=', $toDate))
             ->latest('date')
             ->paginate(12)
             ->withQueryString();
@@ -246,12 +261,18 @@ class AttendanceController extends Controller
         $from = $request->query('from');
         $to = $request->query('to');
         $status = $request->query('status');
+        $request->validate([
+            'from' => ['nullable', 'date_format:d/m/Y'],
+            'to' => ['nullable', 'date_format:d/m/Y'],
+        ]);
+        $fromDate = $this->parseFilterDate($from);
+        $toDate = $this->parseFilterDate($to);
 
         $attendances = Attendance::with(['employee.position', 'employee.shift'])
             ->when($status, fn ($query) => $query->where('status', $status))
-            ->when($from, fn ($query) => $query->whereDate('date', '>=', $from))
-            ->when($to, fn ($query) => $query->whereDate('date', '<=', $to))
-            ->latest()
+            ->when($fromDate, fn ($query) => $query->whereDate('date', '>=', $fromDate))
+            ->when($toDate, fn ($query) => $query->whereDate('date', '<=', $toDate))
+            ->latest('date')
             ->paginate(15)
             ->withQueryString();
 
@@ -262,9 +283,16 @@ class AttendanceController extends Controller
     {
         $from = $request->query('from');
         $to = $request->query('to');
+        $request->validate([
+            'from' => ['nullable', 'date_format:d/m/Y'],
+            'to' => ['nullable', 'date_format:d/m/Y'],
+        ]);
+        $from = $this->parseFilterDate($from);
+        $to = $this->parseFilterDate($to);
         $attendances = Attendance::with(['employee.position', 'employee.shift'])
             ->when($from, fn ($query) => $query->whereDate('date', '>=', $from))
             ->when($to, fn ($query) => $query->whereDate('date', '<=', $to))
+            ->orderByDesc('date')
             ->get();
 
         $pdf = Pdf::loadView('exports.attendance-pdf', compact('attendances', 'from', 'to'));
@@ -274,7 +302,20 @@ class AttendanceController extends Controller
 
     public function exportExcel(Request $request)
     {
-        return Excel::download(new AttendancesExport($request->query('from'), $request->query('to')), 'rekap-absensi-'.now()->format('Ymd').'.xlsx');
+        $request->validate([
+            'from' => ['nullable', 'date_format:d/m/Y'],
+            'to' => ['nullable', 'date_format:d/m/Y'],
+        ]);
+
+        return Excel::download(new AttendancesExport(
+            $this->parseFilterDate($request->query('from')),
+            $this->parseFilterDate($request->query('to'))
+        ), 'rekap-absensi-'.now()->format('Ymd').'.xlsx');
+    }
+
+    private function parseFilterDate(?string $date): ?string
+    {
+        return $date ? Carbon::createFromFormat('d/m/Y', $date)->toDateString() : null;
     }
 
     public function destroy(Attendance $attendance)

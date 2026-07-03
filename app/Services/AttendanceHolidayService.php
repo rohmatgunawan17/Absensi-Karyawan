@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Models\Attendance;
 use App\Models\Employee;
+use App\Models\Holiday;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 
 class AttendanceHolidayService
 {
@@ -60,6 +62,17 @@ class AttendanceHolidayService
 
         foreach (config('indonesian_holidays', [])[$year]['national'] ?? [] as $holiday) {
             $dates->put($holiday['date'], 'Libur Nasional: '.$holiday['name']);
+        }
+
+        if (Schema::hasTable('holidays')) {
+            Holiday::whereYear('date', $year)
+                ->where('type', 'national')
+                ->orderBy('date')
+                ->get()
+                ->each(fn (Holiday $holiday) => $dates->put(
+                    $holiday->date->toDateString(),
+                    'Libur Nasional: '.$holiday->name
+                ));
         }
 
         foreach (CarbonPeriod::create("$year-01-01", "$year-12-31") as $date) {
