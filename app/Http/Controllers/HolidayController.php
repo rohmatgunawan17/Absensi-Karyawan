@@ -34,7 +34,7 @@ class HolidayController extends Controller
         ]);
 
         $databaseHolidays = Schema::hasTable('holidays')
-            ? Holiday::whereYear('date', $year)->get()->map(fn (Holiday $holiday): array => [
+            ? Holiday::whereYear('date', $year)->orderBy('date')->get()->map(fn (Holiday $holiday): array => [
                 'title' => $holiday->name,
                 'start' => $holiday->date->toDateString(),
                 'allDay' => true,

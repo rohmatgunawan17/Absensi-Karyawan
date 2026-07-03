@@ -23,7 +23,7 @@ class AdminHolidayController extends Controller
 
         $holidays = Holiday::with('createdBy')
             ->whereYear('date', $year)
-            ->orderBy('date')
+            ->orderByDesc('date')
             ->paginate(20)
             ->withQueryString();
 

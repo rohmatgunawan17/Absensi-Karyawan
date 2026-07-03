@@ -20,7 +20,7 @@ class EmployeeController extends Controller
             ->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%")
                 ->orWhere('nip', 'like', "%{$search}%")
                 ->orWhereHas('position', fn ($q) => $q->where('name', 'like', "%{$search}%")))
-            ->latest()
+            ->orderBy('name')
             ->paginate(12)
             ->withQueryString();
 
