@@ -37,11 +37,11 @@
             </div>
             <div class="col-md-2">
                 <input type="text" name="from" value="{{ $from }}" class="form-control date-filter"
-                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}">
+                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}" data-max-today="true">
             </div>
             <div class="col-md-2">
                 <input type="text" name="to" value="{{ $to }}" class="form-control date-filter"
-                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}">
+                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}" data-max-today="true">
             </div>
             <div class="col-md-3 d-grid">
                 <button class="btn btn-primary">Terapkan Filter</button>

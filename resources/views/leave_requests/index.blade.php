@@ -9,7 +9,9 @@
                 <h2 class="page-title mb-1">Daftar Pengajuan Izin</h2>
                 <p class="text-muted">Kelola status permintaan cuti dan izin.</p>
             </div>
-            <a href="{{ route('leave-requests.create') }}" class="btn btn-primary">Ajukan Izin</a>
+            @unless (auth()->user()->isAdmin())
+                <a href="{{ route('leave-requests.create') }}" class="btn btn-primary">Ajukan Izin</a>
+            @endunless
         </div>
     </div>
 
@@ -27,16 +29,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($leaveRequests as $request)
+                    @forelse($leaveRequests as $leaveRequest)
                         <tr>
-                            <td>{{ $request->employee->name }}</td>
-                            <td>{{ $request->start_date->translatedFormat('l, j F Y') }} - {{ $request->end_date->translatedFormat('l, j F Y') }}</td>
-                            <td>{{ $request->type }}</td>
-                            <td>{{ $request->status }}</td>
-                            <td>{{ $request->reason }}</td>
+                            <td>{{ $leaveRequest->employee->name }}</td>
+                            <td>{{ $leaveRequest->start_date->translatedFormat('l, j F Y') }} - {{ $leaveRequest->end_date->translatedFormat('l, j F Y') }}</td>
+                            <td>{{ $leaveRequest->type }}</td>
                             <td>
-                                <a href="{{ route('leave-requests.edit', $request) }}"
-                                    class="btn btn-sm btn-outline-light">Ubah</a>
+                                @php
+                                    $badge = match ($leaveRequest->status) {
+                                        'Disetujui' => 'bg-success',
+                                        'Ditolak' => 'bg-danger',
+                                        default => 'bg-warning text-dark',
+                                    };
+                                @endphp
+                                <span class="badge {{ $badge }}">{{ $leaveRequest->status }}</span>
+                            </td>
+                            <td>{{ $leaveRequest->reason }}</td>
+                            <td>
+                                @if (auth()->user()->isAdmin())
+                                    <a href="{{ route('leave-requests.edit', $leaveRequest) }}"
+                                        class="btn btn-sm btn-outline-light">Ubah / ACC</a>
+                                @else
+                                    -
+                                @endif
                             </td>
                         </tr>
                     @empty

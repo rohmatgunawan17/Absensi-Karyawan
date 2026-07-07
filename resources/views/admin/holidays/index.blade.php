@@ -21,7 +21,8 @@
                     @csrf
                     <div class="col-md-6">
                         <label class="form-label">Tanggal</label>
-                        <input type="date" name="date" class="form-control" value="{{ old('date') }}" required>
+                        <input type="text" name="date" class="form-control date-filter" value="{{ old('date') }}"
+                            inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Jenis</label>
@@ -54,8 +55,8 @@
                     <code>tanggal,nama</code>. Kolom opsional: <code>jenis,sumber</code>.</p>
                 <div class="rounded border border-secondary border-opacity-25 p-3 mb-3 small">
                     <code>tanggal,nama,jenis,sumber</code><br>
-                    <code>2027-01-01,Tahun Baru 2027,national,SKB 3 Menteri</code><br>
-                    <code>2027-12-24,Cuti Bersama Natal,collective,SKB 3 Menteri</code>
+                    <code>01/01/2027,Tahun Baru 2027,national,SKB 3 Menteri</code><br>
+                    <code>24/12/2027,Cuti Bersama Natal,collective,SKB 3 Menteri</code>
                 </div>
                 <form id="holidayImportForm" method="POST" action="{{ route('admin.holidays.import') }}"
                     enctype="multipart/form-data">

@@ -24,11 +24,11 @@
         <form class="row gy-3 gx-3" method="GET" action="{{ route('reports.attendance') }}">
             <div class="{{ auth()->user()->isAdmin() ? 'col-md-2' : 'col-md-3' }}">
                 <input type="text" name="from" value="{{ $from }}" class="form-control date-filter"
-                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}">
+                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}" data-max-today="true">
             </div>
             <div class="{{ auth()->user()->isAdmin() ? 'col-md-2' : 'col-md-3' }}">
                 <input type="text" name="to" value="{{ $to }}" class="form-control date-filter"
-                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}">
+                    inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}" data-max-today="true">
             </div>
             @if (auth()->user()->isAdmin())
                 <div class="col-md-3">

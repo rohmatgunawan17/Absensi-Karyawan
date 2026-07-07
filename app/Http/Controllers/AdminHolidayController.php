@@ -41,14 +41,28 @@ class AdminHolidayController extends Controller
     public function store(Request $request, AttendanceHolidayService $holidayService)
     {
         $data = $request->validate([
-            'date' => ['required', 'date', 'after_or_equal:'.now()->startOfYear()->toDateString()],
+            'date' => ['required', 'string'],
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'in:national,collective'],
             'source' => ['nullable', 'string', 'max:255'],
         ]);
 
+        $date = $this->parseDate($data['date']);
+
+        if (! $date) {
+            throw ValidationException::withMessages([
+                'date' => 'Tanggal harus menggunakan format dd/mm/yyyy.',
+            ]);
+        }
+
+        if (Carbon::parse($date)->lt(now()->startOfYear())) {
+            throw ValidationException::withMessages([
+                'date' => 'Tanggal harus berada pada tahun berjalan atau tahun berikutnya.',
+            ]);
+        }
+
         $holiday = Holiday::updateOrCreate(
-            ['date' => $data['date'], 'name' => $data['name'], 'type' => $data['type']],
+            ['date' => $date, 'name' => $data['name'], 'type' => $data['type']],
             ['source' => $data['source'], 'created_by' => $request->user()->id]
         );
 

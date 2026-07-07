@@ -584,7 +584,8 @@
 
                 nativePicker.type = 'date';
                 nativePicker.className = 'native-date-picker';
-                nativePicker.max = todayIso;
+                const maxToday = input.dataset.maxToday === 'true';
+                if (maxToday) nativePicker.max = todayIso;
                 nativePicker.setAttribute('aria-label', 'Pilih tanggal dari kalender');
 
                 icon.className = 'date-picker-icon';
@@ -597,7 +598,7 @@
                 const initialParts = input.value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
                 if (initialParts) {
                     const initialIso = initialParts[3] + '-' + initialParts[2] + '-' + initialParts[1];
-                    nativePicker.value = initialIso > todayIso ? todayIso : initialIso;
+                    nativePicker.value = maxToday && initialIso > todayIso ? todayIso : initialIso;
                     input.value = nativePicker.value === initialIso ? input.value : isoToDisplayDate(todayIso);
                 }
 
@@ -613,8 +614,8 @@
 
                     if (digits.length === 8) {
                         const selectedIso = digits.slice(4, 8) + '-' + digits.slice(2, 4) + '-' + digits.slice(0, 2);
-                        nativePicker.value = selectedIso > todayIso ? todayIso : selectedIso;
-                        input.value = selectedIso > todayIso ? isoToDisplayDate(todayIso) : input.value;
+                        nativePicker.value = maxToday && selectedIso > todayIso ? todayIso : selectedIso;
+                        input.value = maxToday && selectedIso > todayIso ? isoToDisplayDate(todayIso) : input.value;
                     }
                 });
 

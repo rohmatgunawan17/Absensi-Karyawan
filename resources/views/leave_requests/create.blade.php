@@ -23,13 +23,15 @@
                     <div class="mb-3 row">
                         <div class="col-md-6">
                             <label class="form-label">Dari</label>
-                            <input type="date" name="start_date" class="form-control" value="{{ old('start_date') }}"
-                                required>
+                            <input type="text" name="start_date" class="form-control date-filter"
+                                value="{{ old('start_date') }}" inputmode="numeric" placeholder="dd/mm/yyyy"
+                                pattern="\d{2}/\d{2}/\d{4}" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Sampai</label>
-                            <input type="date" name="end_date" class="form-control" value="{{ old('end_date') }}"
-                                required>
+                            <input type="text" name="end_date" class="form-control date-filter"
+                                value="{{ old('end_date') }}" inputmode="numeric" placeholder="dd/mm/yyyy"
+                                pattern="\d{2}/\d{2}/\d{4}" required>
                         </div>
                     </div>
                     <div class="mb-3">
