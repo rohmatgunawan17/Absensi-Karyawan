@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\AttendancesExport;
 use App\Models\Attendance;
+use App\Models\Employee;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -29,11 +30,14 @@ class AttendanceController extends Controller
         $toDate = $this->parseFilterDate($to);
 
         $attendances = Attendance::with(['employee.position', 'employee.shift'])
+            ->whereDate('date', '<=', now()->toDateString())
             ->when($search, fn ($query) => $query->whereHas('employee', fn ($q) => $q->where('name', 'like', "%{$search}%")))
             ->when($status, fn ($query) => $query->where('status', $status))
             ->when($fromDate, fn ($query) => $query->whereDate('date', '>=', $fromDate))
             ->when($toDate, fn ($query) => $query->whereDate('date', '<=', $toDate))
-            ->latest('date')
+            ->orderByDesc('date')
+            ->orderBy('employee_id')
+            ->orderBy('id')
             ->paginate(15)
             ->withQueryString();
 
@@ -60,12 +64,13 @@ class AttendanceController extends Controller
 
         $attendances = Attendance::with(['employee.position', 'employee.shift'])
             ->where('employee_id', $employee->id)
-            ->whereDate('date', '<=', now())
+            ->whereDate('date', '<=', now()->toDateString())
             ->when($type === 'attendance', fn ($query) => $query->where('status', '!=', 'Libur'))
             ->when($type === 'holiday', fn ($query) => $query->where('status', 'Libur'))
             ->when($fromDate, fn ($query) => $query->whereDate('date', '>=', $fromDate))
             ->when($toDate, fn ($query) => $query->whereDate('date', '<=', $toDate))
-            ->latest('date')
+            ->orderByDesc('date')
+            ->orderBy('id')
             ->paginate(12)
             ->withQueryString();
 
@@ -258,42 +263,35 @@ class AttendanceController extends Controller
 
     public function report(Request $request)
     {
+        $filters = $this->reportFilters($request);
         $from = $request->query('from');
         $to = $request->query('to');
-        $status = $request->query('status');
-        $request->validate([
-            'from' => ['nullable', 'date_format:d/m/Y'],
-            'to' => ['nullable', 'date_format:d/m/Y'],
-        ]);
-        $fromDate = $this->parseFilterDate($from);
-        $toDate = $this->parseFilterDate($to);
+        $status = $filters['status'];
+        $selectedEmployeeId = $filters['employeeId'];
+        $employees = $request->user()->isAdmin()
+            ? Employee::orderBy('name')->get(['id', 'nip', 'name'])
+            : collect();
 
-        $attendances = Attendance::with(['employee.position', 'employee.shift'])
-            ->when($status, fn ($query) => $query->where('status', $status))
-            ->when($fromDate, fn ($query) => $query->whereDate('date', '>=', $fromDate))
-            ->when($toDate, fn ($query) => $query->whereDate('date', '<=', $toDate))
-            ->latest('date')
+        $attendances = $this->reportAttendanceQuery($filters)
             ->paginate(15)
             ->withQueryString();
 
-        return view('attendances.report', compact('attendances', 'from', 'to', 'status'));
+        return view('attendances.report', compact(
+            'attendances',
+            'employees',
+            'from',
+            'selectedEmployeeId',
+            'status',
+            'to'
+        ));
     }
 
     public function exportPdf(Request $request)
     {
+        $filters = $this->reportFilters($request);
         $from = $request->query('from');
         $to = $request->query('to');
-        $request->validate([
-            'from' => ['nullable', 'date_format:d/m/Y'],
-            'to' => ['nullable', 'date_format:d/m/Y'],
-        ]);
-        $from = $this->parseFilterDate($from);
-        $to = $this->parseFilterDate($to);
-        $attendances = Attendance::with(['employee.position', 'employee.shift'])
-            ->when($from, fn ($query) => $query->whereDate('date', '>=', $from))
-            ->when($to, fn ($query) => $query->whereDate('date', '<=', $to))
-            ->orderByDesc('date')
-            ->get();
+        $attendances = $this->reportAttendanceQuery($filters)->get();
 
         $pdf = Pdf::loadView('exports.attendance-pdf', compact('attendances', 'from', 'to'));
 
@@ -302,20 +300,67 @@ class AttendanceController extends Controller
 
     public function exportExcel(Request $request)
     {
-        $request->validate([
-            'from' => ['nullable', 'date_format:d/m/Y'],
-            'to' => ['nullable', 'date_format:d/m/Y'],
-        ]);
+        $filters = $this->reportFilters($request);
 
         return Excel::download(new AttendancesExport(
-            $this->parseFilterDate($request->query('from')),
-            $this->parseFilterDate($request->query('to'))
+            $filters['fromDate'],
+            $filters['toDate'],
+            $filters['status'],
+            $filters['employeeId'],
+            $filters['canSeeData']
         ), 'rekap-absensi-'.now()->format('Ymd').'.xlsx');
     }
 
     private function parseFilterDate(?string $date): ?string
     {
         return $date ? Carbon::createFromFormat('d/m/Y', $date)->toDateString() : null;
+    }
+
+    private function reportFilters(Request $request): array
+    {
+        $rules = [
+            'from' => ['nullable', 'date_format:d/m/Y'],
+            'to' => ['nullable', 'date_format:d/m/Y'],
+            'status' => ['nullable', 'in:'.implode(',', Attendance::STATUSES)],
+        ];
+
+        if ($request->user()->isAdmin()) {
+            $rules['employee_id'] = ['nullable', 'integer', 'exists:employees,id'];
+        }
+
+        $request->validate($rules);
+
+        $employeeId = null;
+        $canSeeData = true;
+
+        if ($request->user()->isAdmin()) {
+            $employeeId = $request->filled('employee_id') ? (int) $request->query('employee_id') : null;
+        } else {
+            $employeeId = $request->user()->employee?->id;
+            $canSeeData = $employeeId !== null;
+        }
+
+        return [
+            'canSeeData' => $canSeeData,
+            'employeeId' => $employeeId,
+            'fromDate' => $this->parseFilterDate($request->query('from')),
+            'status' => $request->query('status'),
+            'toDate' => $this->parseFilterDate($request->query('to')),
+        ];
+    }
+
+    private function reportAttendanceQuery(array $filters)
+    {
+        return Attendance::with(['employee.position', 'employee.shift'])
+            ->when(! $filters['canSeeData'], fn ($query) => $query->whereRaw('1 = 0'))
+            ->whereDate('date', '<=', now()->toDateString())
+            ->when($filters['employeeId'], fn ($query, $employeeId) => $query->where('employee_id', $employeeId))
+            ->when($filters['status'], fn ($query, $status) => $query->where('status', $status))
+            ->when($filters['fromDate'], fn ($query, $fromDate) => $query->whereDate('date', '>=', $fromDate))
+            ->when($filters['toDate'], fn ($query, $toDate) => $query->whereDate('date', '<=', $toDate))
+            ->orderByDesc('date')
+            ->orderBy('employee_id')
+            ->orderBy('id');
     }
 
     public function destroy(Attendance $attendance)

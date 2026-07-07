@@ -24,6 +24,8 @@
             @else
                 <a href="{{ route('attendance.history') }}"
                     class="list-group-item list-group-item-action bg-transparent text-white">Riwayat Absensi</a>
+                <a href="{{ route('reports.attendance') }}"
+                    class="list-group-item list-group-item-action bg-transparent text-white">Rekap Absensi</a>
                 <a href="{{ route('leave-requests.index') }}"
                     class="list-group-item list-group-item-action bg-transparent text-white">Ajukan Izin</a>
                 <a href="{{ route('attendance.qr') }}"

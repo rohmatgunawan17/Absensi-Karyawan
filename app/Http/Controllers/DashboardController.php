@@ -23,7 +23,10 @@ class DashboardController extends Controller
             $holidayToday = Attendance::whereDate('date', now())->where('status', 'Libur')->count();
             $recentActivities = Attendance::with('employee')
                 ->where('status', '!=', 'Libur')
-                ->latest('date')
+                ->whereDate('date', '<=', now()->toDateString())
+                ->orderByDesc('date')
+                ->orderBy('employee_id')
+                ->orderBy('id')
                 ->take(5)
                 ->get();
             $monthlyData = collect();
@@ -33,6 +36,7 @@ class DashboardController extends Controller
                     'label' => now()->subMonths($i)->translatedFormat('F Y'),
                     'count' => Attendance::whereYear('date', now()->subMonths($i)->year)
                         ->whereMonth('date', now()->subMonths($i)->month)
+                        ->whereDate('date', '<=', now()->toDateString())
                         ->where('status', '!=', 'Libur')
                         ->count(),
                 ]);

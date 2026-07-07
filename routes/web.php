@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AdminHolidayController;
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HolidayController;
@@ -28,6 +28,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/leave-requests/create', [LeaveRequestController::class, 'create'])->name('leave-requests.create');
     Route::post('/leave-requests', [LeaveRequestController::class, 'store'])->name('leave-requests.store');
     Route::get('/leave-requests', [LeaveRequestController::class, 'index'])->name('leave-requests.index');
+    Route::get('/reports/attendance/pdf', [AttendanceController::class, 'exportPdf'])->name('reports.attendance.pdf');
+    Route::get('/reports/attendance/excel', [AttendanceController::class, 'exportExcel'])->name('reports.attendance.excel');
+    Route::get('/reports/attendance', [AttendanceController::class, 'report'])->name('reports.attendance');
 
     Route::middleware([RoleMiddleware::class.':admin'])->group(function () {
         Route::resource('employees', EmployeeController::class)->except(['show']);
@@ -39,9 +42,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/holidays/import', [AdminHolidayController::class, 'import'])->name('admin.holidays.import');
         Route::delete('/admin/holidays/{holiday}', [AdminHolidayController::class, 'destroy'])->name('admin.holidays.destroy');
         Route::resource('leave-requests', LeaveRequestController::class)->only(['edit', 'update', 'destroy']);
-        Route::get('/reports/attendance/pdf', [AttendanceController::class, 'exportPdf'])->name('reports.attendance.pdf');
-        Route::get('/reports/attendance/excel', [AttendanceController::class, 'exportExcel'])->name('reports.attendance.excel');
-        Route::get('/reports/attendance', [AttendanceController::class, 'report'])->name('reports.attendance');
     });
 });
 

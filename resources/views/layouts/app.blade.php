@@ -132,6 +132,60 @@
             color: #a9a9a9;
         }
 
+        .date-filter-field {
+            position: relative;
+        }
+
+        .date-filter-field > .date-filter {
+            padding-right: 3rem;
+        }
+
+        .native-date-picker {
+            position: absolute;
+            z-index: 2;
+            top: 0;
+            right: 0;
+            width: 2.8rem;
+            height: 100%;
+            padding: 0;
+            opacity: 0;
+            border: 0;
+            cursor: pointer;
+        }
+
+        .native-date-picker::-webkit-calendar-picker-indicator {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .date-picker-icon {
+            position: absolute;
+            z-index: 1;
+            top: 50%;
+            right: .85rem;
+            display: grid;
+            width: 1.15rem;
+            height: 1.15rem;
+            color: #cbd5e1;
+            pointer-events: none;
+            place-items: center;
+            transform: translateY(-50%);
+        }
+
+        .date-picker-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .native-date-picker:focus-visible + .date-picker-icon {
+            color: #ff6b6b;
+            outline: 2px solid #ff6b6b;
+            outline-offset: 5px;
+            border-radius: .2rem;
+        }
+
         .password-field {
             position: relative;
         }
@@ -345,6 +399,10 @@
             color: #94a3b8;
         }
 
+        html[data-theme="light"] .date-picker-icon {
+            color: #64748b;
+        }
+
         html[data-theme="light"] .table-dark {
             --bs-table-color: #1f2937;
             --bs-table-bg: transparent;
@@ -507,7 +565,42 @@
 
             updateThemeLabel();
 
+            const today = new Date();
+            const todayIso = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+            const isoToDisplayDate = function(value) {
+                const parts = value.split('-');
+
+                return parts[2] + '/' + parts[1] + '/' + parts[0];
+            };
+
             document.querySelectorAll('.date-filter').forEach(function(input) {
+                const wrapper = document.createElement('div');
+                const nativePicker = document.createElement('input');
+                const icon = document.createElement('span');
+
+                wrapper.className = 'date-filter-field';
+                input.parentNode.insertBefore(wrapper, input);
+                wrapper.appendChild(input);
+
+                nativePicker.type = 'date';
+                nativePicker.className = 'native-date-picker';
+                nativePicker.max = todayIso;
+                nativePicker.setAttribute('aria-label', 'Pilih tanggal dari kalender');
+
+                icon.className = 'date-picker-icon';
+                icon.setAttribute('aria-hidden', 'true');
+                icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>';
+
+                wrapper.appendChild(nativePicker);
+                wrapper.appendChild(icon);
+
+                const initialParts = input.value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                if (initialParts) {
+                    const initialIso = initialParts[3] + '-' + initialParts[2] + '-' + initialParts[1];
+                    nativePicker.value = initialIso > todayIso ? todayIso : initialIso;
+                    input.value = nativePicker.value === initialIso ? input.value : isoToDisplayDate(todayIso);
+                }
+
                 input.addEventListener('input', function() {
                     const digits = input.value.replace(/\D/g, '').slice(0, 8);
                     const parts = [];
@@ -517,6 +610,20 @@
                     if (digits.length > 4) parts.push(digits.slice(4, 8));
 
                     input.value = parts.join('/');
+
+                    if (digits.length === 8) {
+                        const selectedIso = digits.slice(4, 8) + '-' + digits.slice(2, 4) + '-' + digits.slice(0, 2);
+                        nativePicker.value = selectedIso > todayIso ? todayIso : selectedIso;
+                        input.value = selectedIso > todayIso ? isoToDisplayDate(todayIso) : input.value;
+                    }
+                });
+
+                nativePicker.addEventListener('change', function() {
+                    if (!nativePicker.value) return;
+
+                    const parts = nativePicker.value.split('-');
+                    input.value = parts[2] + '/' + parts[1] + '/' + parts[0];
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
                 });
             });
 

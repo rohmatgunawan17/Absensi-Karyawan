@@ -22,14 +22,26 @@
 
     <div class="card p-4 mb-4">
         <form class="row gy-3 gx-3" method="GET" action="{{ route('reports.attendance') }}">
-            <div class="col-md-3">
+            <div class="{{ auth()->user()->isAdmin() ? 'col-md-2' : 'col-md-3' }}">
                 <input type="text" name="from" value="{{ $from }}" class="form-control date-filter"
                     inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}">
             </div>
-            <div class="col-md-3">
+            <div class="{{ auth()->user()->isAdmin() ? 'col-md-2' : 'col-md-3' }}">
                 <input type="text" name="to" value="{{ $to }}" class="form-control date-filter"
                     inputmode="numeric" placeholder="dd/mm/yyyy" pattern="\d{2}/\d{2}/\d{4}">
             </div>
+            @if (auth()->user()->isAdmin())
+                <div class="col-md-3">
+                    <select name="employee_id" class="form-select">
+                        <option value="">Semua Karyawan</option>
+                        @foreach ($employees as $employee)
+                            <option value="{{ $employee->id }}" @selected((int) $selectedEmployeeId === $employee->id)>
+                                {{ $employee->name }}{{ $employee->nip ? ' - '.$employee->nip : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
             <div class="col-md-3">
                 <select name="status" class="form-select">
                     <option value="">Semua Status</option>
@@ -39,7 +51,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3 d-grid">
+            <div class="{{ auth()->user()->isAdmin() ? 'col-md-2' : 'col-md-3' }} d-grid">
                 <button class="btn btn-primary">Terapkan</button>
             </div>
         </form>
